@@ -1,0 +1,460 @@
+# Services
+
+This document provides a detailed overview of the services that make up the AutoSentry ecosystem, their responsibilities, technologies, communication patterns, and repository locations.
+
+---
+
+# System Overview
+
+AutoSentry follows a microservices architecture where each service owns a specific business capability and communicates through REST APIs or asynchronous Kafka events.
+
+```text
+Frontend
+    |
+    v
+API Gateway
+    |
+------------------------------------------------
+|                                              |
+v                                              v
+
+User Service                           Vehicle Service
+                                              |
+                                              |
+                                              v
+
+                                     Kafka Producer
+                                              |
+                                              v
+
+                                   vehicle-expiry-topic
+                                              |
+                                              v
+
+                                  Notification Service
+                                              |
+                                              v
+
+                                       Email Alerts
+```
+
+Supporting infrastructure:
+
+* Eureka Server
+* Apache Kafka
+* PostgreSQL
+* Prometheus
+* Grafana
+* MailHog
+
+---
+
+# Frontend
+
+## Repository
+
+https://github.com/SujithKumar-Codes/autosentry-client
+
+## Responsibilities
+
+The frontend provides the primary user interface for interacting with the AutoSentry platform.
+
+Features include:
+
+* User Registration
+* User Login
+* Vehicle Registration
+* Vehicle Dashboard
+* Notification Preferences
+* Compliance Tracking Views
+* Session Management
+
+## Technologies
+
+* Angular
+* Angular Signals
+* RxJS
+* Tailwind CSS
+* Angular HttpClient
+* Route Guards
+* HTTP Interceptors
+
+## Integration
+
+The frontend communicates exclusively through the API Gateway and does not directly access backend services.
+
+---
+
+# API Gateway
+
+## Repository
+
+https://github.com/SujithKumar-Codes/autosentry-api-gateway
+
+## Responsibilities
+
+Acts as the centralized entry point for all client requests.
+
+### Core Functions
+
+* Request Routing
+* Service Abstraction
+* Gateway Layer
+* Integration with Eureka Service Discovery
+
+## Benefits
+
+* Single entry point
+* Simplified frontend integration
+* Reduced service exposure
+* Easier future security enhancements
+
+---
+
+# Eureka Server
+
+## Repository
+
+https://github.com/SujithKumar-Codes/autosentry-eureka-server
+
+## Responsibilities
+
+Provides service registration and discovery capabilities across the platform.
+
+### Core Functions
+
+* Service Registration
+* Service Discovery
+* Dynamic Endpoint Resolution
+
+## Benefits
+
+Services can discover each other without hardcoded host addresses.
+
+---
+
+# User Service
+
+## Repository
+
+https://github.com/SujithKumar-Codes/autosentry-user-service
+
+## Responsibilities
+
+Handles user management and authentication workflows.
+
+### Features
+
+#### Authentication
+
+* User Registration
+* User Login
+* JWT Token Generation
+* Password Hashing
+
+#### User Management
+
+* User Profile Retrieval
+* Notification Preference Management
+
+### Database
+
+```text
+user_db
+```
+
+### Technologies
+
+* Spring Boot
+* Spring Security
+* JWT
+* Spring Data JPA
+* PostgreSQL
+* Eureka Client
+
+### Key Endpoints
+
+```http
+POST /api/auth/register
+POST /api/auth/login
+
+GET  /api/users/{id}
+GET  /api/users/{id}/preferences
+PUT  /api/users/{id}/preferences
+```
+
+---
+
+# Vehicle Service
+
+## Repository
+
+https://github.com/ShawnSaldanha/autosentry-vehicle
+
+## Responsibilities
+
+The Vehicle Service is the core business service of AutoSentry.
+
+It manages vehicle records, tracks compliance deadlines, and publishes notification events.
+
+### Features
+
+#### Vehicle Management
+
+* Vehicle Registration
+* Vehicle Retrieval
+* Vehicle Ownership Tracking
+
+#### Compliance Monitoring
+
+* Insurance Expiry Tracking
+* Pollution Certificate Expiry Tracking
+* Automated Expiry Evaluation
+
+#### Event Publishing
+
+Publishes compliance events to Kafka when monitored documents approach expiration.
+
+### Database
+
+```text
+vehicle_db
+```
+
+### Technologies
+
+* Spring Boot
+* Spring Data JPA
+* PostgreSQL
+* Kafka
+* JWT
+* Eureka Client
+
+### Kafka Integration
+
+Topic:
+
+```text
+vehicle-expiry-topic
+```
+
+Published Events:
+
+```text
+INSURANCE_EXPIRY
+POLLUTION_EXPIRY
+```
+
+### Scheduler
+
+A scheduled task continuously evaluates vehicle compliance dates and generates events when notification thresholds are reached.
+
+### Key Endpoints
+
+```http
+POST /api/vehicles
+
+GET  /api/vehicles
+
+GET  /api/vehicles/owner/{ownerId}
+```
+
+---
+
+# Notification Service
+
+## Repository
+
+https://github.com/SujithKumar-Codes/autosentry-notification-service
+
+## Responsibilities
+
+Consumes compliance events and delivers notifications to vehicle owners.
+
+### Features
+
+#### Event Consumption
+
+Consumes Kafka events generated by the Vehicle Service.
+
+#### Notification Processing
+
+Builds user-friendly notification content based on compliance events.
+
+#### Email Delivery
+
+Delivers expiry notifications through email.
+
+### Technologies
+
+* Spring Boot
+* Kafka
+* Spring Mail
+* Eureka Client
+
+### Kafka Integration
+
+Consumes:
+
+```text
+vehicle-expiry-topic
+```
+
+Consumer Group:
+
+```text
+notification-group
+```
+
+### Current Delivery Method
+
+Development Environment:
+
+```text
+MailHog
+```
+
+Future Production Options:
+
+* Gmail SMTP
+* SendGrid
+* AWS SES
+
+---
+
+# Infrastructure Repository
+
+## Repository
+
+https://github.com/ShawnSaldanha/autosentry-infrastructure
+
+## Responsibilities
+
+Contains the infrastructure configuration required to run the complete AutoSentry ecosystem.
+
+### Managed Components
+
+#### Database
+
+* PostgreSQL
+
+#### Messaging
+
+* Apache Kafka
+* Kafka UI
+
+#### Email Testing
+
+* MailHog
+
+#### Monitoring
+
+* Prometheus
+* Grafana
+
+#### Platform Services
+
+* Eureka Server
+* API Gateway
+* User Service
+* Vehicle Service
+* Notification Service
+
+### Orchestration
+
+The entire platform can be deployed locally through Docker Compose.
+
+---
+
+# Service Communication
+
+## Synchronous Communication
+
+Client requests follow:
+
+```text
+Frontend
+    |
+    v
+API Gateway
+    |
+    v
+Target Service
+```
+
+Examples:
+
+* User Registration
+* Login
+* Vehicle Registration
+* Profile Retrieval
+
+---
+
+## Asynchronous Communication
+
+Compliance notifications follow an event-driven workflow.
+
+```text
+Vehicle Service
+       |
+       v
+
+vehicle-expiry-topic
+       |
+       v
+
+Notification Service
+       |
+       v
+
+Email Notification
+```
+
+This decouples compliance processing from notification delivery and improves scalability.
+
+---
+
+# Monitoring
+
+Every core service exposes operational metrics through Spring Boot Actuator.
+
+### Metrics Collection
+
+Prometheus collects metrics from:
+
+* API Gateway
+* User Service
+* Vehicle Service
+* Notification Service
+* Eureka Server
+
+### Visualization
+
+Grafana provides dashboards for:
+
+* Service Health
+* JVM Metrics
+* Request Metrics
+* Resource Utilization
+* Availability Monitoring
+
+---
+
+# Data Ownership
+
+Following microservice principles, each service owns its own data.
+
+| Service         | Database   |
+| --------------- | ---------- |
+| User Service    | user_db    |
+| Vehicle Service | vehicle_db |
+
+Additional databases have been provisioned for future service expansion:
+
+* auth_db
+* compliance_db
+* maintenance_db
+* notification_db
+
+This design allows services to evolve independently while maintaining clear ownership boundaries.
