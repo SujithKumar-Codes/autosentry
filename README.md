@@ -193,15 +193,15 @@ This architecture enables services to evolve independently while maintaining loo
 
 AutoSentry is organized as a collection of focused repositories.
 
-| Component | Description |
-| --- | --- |
-| `autosentry-client` | Angular Frontend |
-| `autosentry-api-gateway` | API Gateway |
-| `autosentry-eureka-server` | Service Discovery |
-| `autosentry-user-service` | Authentication & User Management |
-| `autosentry-vehicle` | Vehicle Management, Compliance Monitoring & Kafka Producer |
-| `autosentry-notification-service` | Kafka Consumer & Notification Processing |
-| `autosentry-infrastructure` | Docker, Kafka, Monitoring & Infrastructure |
+| Component | Repository | Description |
+|------------|------------|------------|
+| Frontend | [autosentry-client](https://github.com/SujithKumar-Codes/autosentry-client) | Angular Frontend |
+| API Gateway | [autosentry-api-gateway](https://github.com/SujithKumar-Codes/autosentry-api-gateway) | Gateway Layer |
+| Eureka Server | [autosentry-eureka-server](https://github.com/SujithKumar-Codes/autosentry-eureka-server) | Service Discovery |
+| User Service | [autosentry-user-service](https://github.com/SujithKumar-Codes/autosentry-user-service) | Authentication & User Management |
+| Vehicle Service | [autosentry-vehicle](https://github.com/ShawnSaldanha/autosentry-vehicle) | Compliance Monitoring & Kafka Producer |
+| Notification Service | [autosentry-notification-service](https://github.com/SujithKumar-Codes/autosentry-notification-service) | Notification Processing |
+| Infrastructure | [autosentry-infrastructure](https://github.com/ShawnSaldanha/autosentry-infrastructure) | Docker, Kafka, Monitoring & Infrastructure |
 
 ---
 
