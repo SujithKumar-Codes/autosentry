@@ -112,10 +112,6 @@ The platform follows a distributed microservices architecture.
 | Eureka Server |    | Apache Kafka |    |  Prometheus  |    |   Grafana    |
 +---------------+    +--------------+    +--------------+    +--------------+
 
-```
-
-Architecture diagrams and infrastructure visualizations are available in the `/docs` directory.
-
 ---
 
 ## Event-Driven Workflow
