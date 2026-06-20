@@ -112,7 +112,7 @@ The platform follows a distributed microservices architecture.
 | Eureka Server |    | Apache Kafka |    |  Prometheus  |    |   Grafana    |
 +---------------+    +--------------+    +--------------+    +--------------+
 
----
+```
 
 ## Event-Driven Workflow
 
